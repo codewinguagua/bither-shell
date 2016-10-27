@@ -54,8 +54,7 @@ public class AbstractDbInitializer extends AbstractDb {
 
 	@Override
 	public IHDAccountAddressProvider initHDAccountAddressProvider() {
-		// TODO Auto-generated method stub
-		return null;
+		return new HDAccountAddressProviderImpl(this.provider);
 	}
 
 	@Override
@@ -132,6 +131,7 @@ public class AbstractDbInitializer extends AbstractDb {
     }
 
     private void createHDAccountAddress(SqliteDb db) throws SQLException {
+    	db.execUpdate(AbstractDb.CREATE_PASSWORD_SEED_SQL, null);
     	db.execUpdate(AbstractDb.CREATE_HD_SEEDS_SQL, null);
     	db.execUpdate(AbstractDb.CREATE_HD_ACCOUNT, null);
     	db.execUpdate(AbstractDb.CREATE_ALIASES_SQL, null);

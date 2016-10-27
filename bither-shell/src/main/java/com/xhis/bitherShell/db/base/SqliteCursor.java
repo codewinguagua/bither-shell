@@ -35,7 +35,7 @@ public class SqliteCursor implements ICursor {
 		try {
 			return getColumnIndexOrThrow(var1);
 		} catch (IllegalArgumentException e) {
-			throw new RuntimeException(e);
+			return -1;
 		}
 	}
 

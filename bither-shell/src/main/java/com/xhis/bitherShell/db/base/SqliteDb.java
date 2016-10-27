@@ -82,13 +82,28 @@ public class SqliteDb implements IDb {
 
 	@Override
 	public void execUpdate(String sql, String[] params) {
+		execUpdate(sql, (Object[])params);
+	}
+
+	@Override
+	public void execQueryOneRecord(String sql, String[] params,
+			Function<ICursor, Void> func) {
+		execQueryOneRecord(sql, (Object[])params, func);
+	}
+
+	@Override
+	public void execQueryLoop(String sql, String[] params,
+			Function<ICursor, Void> func) {
+		execQueryLoop(sql, (Object[])params, func);
+	}
+
+
+	@Override
+	public void execUpdate(String sql, Object[] params) {
         try {
             PreparedStatement stmt = conn.prepareStatement(sql);
-            if (params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    stmt.setString(i + 1, params[i]);
-                }
-            }
+            setStatementParams(stmt, params);
+
             stmt.executeUpdate();
             conn.commit();
             stmt.close();
@@ -98,15 +113,11 @@ public class SqliteDb implements IDb {
 	}
 
 	@Override
-	public void execQueryOneRecord(String sql, String[] params,
+	public void execQueryOneRecord(String sql, Object[] params,
 			Function<ICursor, Void> func) {
         try {
             PreparedStatement stmt = conn.prepareStatement(sql);
-            if (params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    stmt.setString(i + 1, params[i]);
-                }
-            }
+            setStatementParams(stmt, params);
 
             ResultSet c = stmt.executeQuery();
             SqliteCursor cursor = new SqliteCursor(c);
@@ -121,15 +132,11 @@ public class SqliteDb implements IDb {
 	}
 
 	@Override
-	public void execQueryLoop(String sql, String[] params,
+	public void execQueryLoop(String sql, Object[] params,
 			Function<ICursor, Void> func) {
         try {
             PreparedStatement stmt = conn.prepareStatement(sql);
-            if (params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    stmt.setString(i + 1, params[i]);
-                }
-            }
+            setStatementParams(stmt, params);
 
             ResultSet c = stmt.executeQuery();
             SqliteCursor cursor = new SqliteCursor(c);
@@ -141,6 +148,26 @@ public class SqliteDb implements IDb {
         } catch (SQLException e) {
 			throw new RuntimeException(e);
         }
+	}
+
+	private void setStatementParams(PreparedStatement stmt, Object[] params)
+			throws SQLException {
+
+		if (params != null) {
+            for (int i = 0; i < params.length; i++) {
+            	Object p = params[i];
+            	if (p instanceof String) {
+            		stmt.setString(i + 1, (String)p);
+            	} else if (p instanceof Long) {
+                		stmt.setLong(i + 1, (Long)p);
+            	} else if (p instanceof Integer) {
+            		stmt.setLong(i + 1, (Integer)p);
+            	} else {
+            		throw new RuntimeException("Unsupported parameter type");
+            	}
+            }
+        }
+		
 	}
 
 }
